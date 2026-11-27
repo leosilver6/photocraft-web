@@ -1,0 +1,49 @@
+name: Deploy PhotoCraft web
+
+on:
+  workflow_dispatch:          # "Run workflow" button on the Actions tab
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"      # every Monday: pick up new PhotoCraft releases
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download the newest PhotoCraft web release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Newest release (pre-releases included) that has a photocraft-web-*.zip attached
+          for tag in $(gh release list -R storytold/photocraft -L 30 --json tagName -q '.[].tagName'); do
+            if gh release download "$tag" -R storytold/photocraft -p 'photocraft-web-*.zip' -D dl 2>/dev/null; then
+              echo "Using PhotoCraft release $tag"
+              break
+            fi
+          done
+          ls dl/photocraft-web-*.zip >/dev/null 2>&1 || { echo "No photocraft-web zip found in recent releases"; exit 1; }
+          unzip -q dl/photocraft-web-*.zip -d unpacked
+          mv unpacked/photocraft-web-*/ site
+          touch site/.nojekyll
+          ls -la site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
