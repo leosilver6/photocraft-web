@@ -1,0 +1,32 @@
+name: Diagnose PhotoCraft web
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/diagnose/**', '.github/workflows/diagnose.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install headless browsers
+        run: |
+          npm init -y >/dev/null
+          npm install playwright@1.56.1
+          npx playwright install --with-deps webkit chromium
+      - name: Load the site
+        run: node .github/diagnose/check.mjs
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: screenshots
+          path: shot-*.png
