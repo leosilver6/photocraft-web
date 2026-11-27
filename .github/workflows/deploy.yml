@@ -38,12 +38,11 @@ jobs:
           ls dl/photocraft-web-*.zip >/dev/null 2>&1 || { echo "No photocraft-web zip found in recent releases"; exit 1; }
           unzip -q dl/photocraft-web-*.zip -d unpacked
           mv unpacked/photocraft-web-*/ site
-          touch site/.nojekyll
           ls -la site
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
