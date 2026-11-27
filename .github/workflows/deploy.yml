@@ -28,8 +28,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # Newest release (pre-releases included) that has a photocraft-web-*.zip attached
-          for tag in $(gh release list -R storytold/photocraft -L 30 --json tagName -q '.[].tagName'); do
+          # Newest full release (test builds skipped) that has a photocraft-web-*.zip attached
+          for tag in $(gh release list -R storytold/photocraft -L 30 --exclude-pre-releases --json tagName -q '.[].tagName'); do
             if gh release download "$tag" -R storytold/photocraft -p 'photocraft-web-*.zip' -D dl 2>/dev/null; then
               echo "Using PhotoCraft release $tag"
               break
