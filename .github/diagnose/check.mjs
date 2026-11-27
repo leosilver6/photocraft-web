@@ -24,6 +24,14 @@ for (const [name, type] of [['webkit', webkit], ['chromium', chromium]]) {
       if (s) { state = `${s} after ${((Date.now() - t0) / 1000).toFixed(1)}s`; break; }
       await page.waitForTimeout(1000);
     }
+    if (state.startsWith('STARTED')) {
+      await page.waitForTimeout(15000);
+      const later = await page.evaluate(() => {
+        const st = document.getElementById('photocraft_stopped');
+        return st && !st.hidden ? 'but then STOPPED: ' + st.innerText : 'still running 15s later';
+      }).catch(e => 'eval error: ' + e.message);
+      state += ', ' + later;
+    }
     const text = await page.evaluate(() => document.getElementById('photocraft_loading')?.innerText ?? '').catch(() => '');
     console.log(`\n===== ${name} ${q || '(default)'}: ${state}`);
     if (text) console.log('loading text: ' + text.replace(/\s+/g, ' '));
