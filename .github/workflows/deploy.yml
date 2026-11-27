@@ -38,6 +38,12 @@ jobs:
           ls dl/photocraft-web-*.zip >/dev/null 2>&1 || { echo "No photocraft-web zip found in recent releases"; exit 1; }
           unzip -q dl/photocraft-web-*.zip -d unpacked
           mv unpacked/photocraft-web-*/ site
+          # Work around a packaging bug in recent releases: app/photocraft-web.js imports
+          # ./snippets/... relative to app/, but the zip only has snippets/ at the top level.
+          if [ -d site/snippets ] && [ ! -d site/app/snippets ]; then
+            cp -r site/snippets site/app/snippets
+            echo "Copied snippets/ into app/snippets/"
+          fi
           ls -la site
 
       - uses: actions/configure-pages@v6
